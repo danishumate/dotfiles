@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import os, fnmatch, sys
+from sys import argv, exit
+
+script, thisdir, orig, replace, filetype = argv
+
+def findReplace(directory, find, replace, filePattern):
+    for path, dirs, files in os.walk(os.path.abspath(directory)):
+        for filename in fnmatch.filter(files, filePattern):
+            filepath = os.path.join(path, filename)
+            with open(filepath) as f:
+                s = f.read()
+            s = s.replace(find, replace)
+            with open(filepath, "w") as f:
+                f.write(s)
+
+print "I was called with %s %s %s %s" % (thisdir, orig, replace, filetype)
+cool = str(raw_input("Is this cool [y/n]? ")).lower()
+if cool != 'y':
+    sys.exit(43)
+else:
+    findReplace(thisdir, orig, replace, filetype)

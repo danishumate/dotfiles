@@ -1,0 +1,71 @@
+# Settings
+theme                        = "A4299D9B-1DE5-4BC4-87F6-A757E71B1597"
+fontName                     = "Anonymous Pro for Powerline"
+fontSize                     = 16
+myExtraIncludes              = ".tm_properties,.htaccess,.gitignore"
+fileBrowserGlob              = "{*,$myExtraIncludes}"
+include                      = "{$include,$myExtraIncludes}"
+projectDirectory             = "$CWD"
+# windowTitle                  = "$TM_DISPLAYNAME — ${CWD/^.*\///}"
+windowTitle                  = "$TM_DISPLAYNAME${TM_DIRECTORY/\A(?:\/Users\/bshumate\w+\/?(.*)|(.+))\z/${2:? – ${2/\A\/Users\/bshumate/~/}:${1/\A(?=.)/ – /}}/}"
+excludeInFileChooser         = "{$exclude,*.xib}"
+
+myExtraExcludes              = "log,vendor,tmp"
+excludeInFileChooser         = "{$excludeInFileChooser,$myExtraExcludes}"
+excludeInFolderSearch        = "{$excludeInFolderSearch,$myExtraExcludes}"
+# excludeInBrowser           = "{$excludeInBrowser,log,vendor,tmp}"
+
+
+
+# Default editing configuration
+#
+softWrap                     = true
+softTabs                     = true
+spellChecking                = true
+tabSize                      = 2
+# 78 or "Use Window Frame", choose one
+wrapColumn                   = 78
+
+# Variables
+PATH                         = "$PATH:$HOME/bin"
+TM_GIT                       = "/usr/local/bin/git"
+TM_HG                        = "/usr/local/bin/hg"
+TM_ORGANIZATION_NAME         = 'Brian Shumate'
+
+# File type specific configuration
+#
+[ text ]
+showInvisibles               = true
+
+[ .git/COMMIT_EDITMSG ]
+softWrap                     = true
+spellChecking                = true
+spellingLanguage             = 'en'
+
+[ attr.untitled ]
+fileType                     = 'text.plain'
+softWrap                     = true
+wrapColumn                   = 78
+
+[ source ]
+softTabs                     = true
+tabSize                      = 2
+
+[ source.html ]
+softTabs                     = true
+tabSize                      = 2
+
+[ source.javascript ]
+softTabs                     = true
+tabSize                      = 2
+
+[ source.python ]
+softTabs                     = true
+tabSize                      = 4
+
+[ source.ruby ]
+softTabs                     = true
+tabSize                      = 2
+
+[ "{README,INSTALL,LICENSE,TODO}" ]
+fileType                     = "text.plain"

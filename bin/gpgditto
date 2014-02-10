@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# name:     gpgditto.sh
+# author:   brian@brianshumate.com
+# purpose:  Ditto gnupg data to  a usb key when it is present
+#           This script is called by cron at a reasonable interval
+#           to grab a fresh copy of your gnupgs often, e.g.,
+#           every 10 minutes.
+# created:  0082007
+# updated:  04202007
+#
+mins="10"
+mykeys="/Users/$(whoami)/.gnupg"
+myusbkey="/Volumes/BSHUMATE"
+myxmark="$myusbkey/cortexicon.dmg"
+
+function logger {
+    /usr/bin/logger -s -t GPGDitto $1. $2
+    }
+
+function ditkey {
+    /usr/bin/ditto $mykeys $myusbkey/personal_env/etc/current/GNUpg
+    }
+
+logger I "Keychain Ditto startup."
+
+if [ -f $myxmark ]
+    then
+        logger I "USB key is inserted, backing up gnupg data."
+            if ditkey
+                then
+                    logger I "gnupg data backed up."
+                else
+                    logger E "Problem backing up gnupg data."
+                    exit 1
+            fi
+else
+    logger I "USB key not inserted, next gnupg data backup attempt in $mins minutes."
+fi

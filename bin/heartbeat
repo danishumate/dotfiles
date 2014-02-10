@@ -1,0 +1,47 @@
+#!/usr/bin/perl -w
+#
+# If we cannot keep this on a professional level,
+# I'm going to have to hang up on you...
+#
+use strict;
+use diagnostics;
+#
+# ---name:      heartbeat.pl
+# ---author:    Brian Shumate <brian @ brianshumate com>
+# ---purpose:   checks in to notify location of system
+# ---created:   2003-07-21
+# ---modified:  2014-02-10
+# ---notes:     a modified version of the script from:
+#    http://www.macos.utah.edu/Documentation/macosx/security/security.html
+#
+# config notes
+#
+# 1) Change baseurl (www.example.com) below to match your actual hostname
+# 2) Create a basic HTML file in the web server's root named MACSERIALNUM.html
+#    where MACSERIALNUM is replaced with your actual system
+#    serial number e,g., UV4791W2PQW.html
+#
+
+sleep int(rand 60);
+#
+my $netdevs = `ifconfig -a inet 2>/dev/null | sed -n -e '/127.0.0.1/d' -e '/0.0.0.0/d' -e '/tunnel/d' -e '/inet/p' | wc -l`;
+
+# get system serial number:
+#
+my $raw_serial = `/usr/sbin/system_profiler | /usr/bin/grep -m 1 Serial`;
+my $serial = substr($raw_serial,21,11);
+print $serial;
+#
+#
+my $baseurl ="http://www.example.com";
+my $useragent = "Heartbeat OSX - UNIT $serial CHECKING IN";
+
+# hit the server:
+#
+my $url = $baseurl."/".$serial.".html";
+   if ( $netdevs == 1 ) {
+       my $checkin = `/usr/bin/curl -A \"$useragent\" $url`;
+       print $checkin;
+     }
+
+# end

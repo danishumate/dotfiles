@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+import json
+import os
+import time
+
+# current prefs
+pref_root = '{0}/Library/Application Support/Google/Chrome/Default/Preferences'
+pref_path = pref_root.format(os.getenv('HOME'))
+prefs = open(pref_path, 'r+')
+json_prefs = prefs.read()
+
+# backup
+old_prefs = open('{0}.{1}'.format(pref_path, time.time()), 'w')
+old_prefs.write(json_prefs)
+old_prefs.close()
+
+# disable referrers
+new_prefs = json.loads(json_prefs)
+new_prefs['enable_referrers'] = False
+new_json_prefs = json.dumps(new_prefs, sort_keys=True, indent=4)
+
+# save
+prefs.write(new_json_prefs)
+prefs.close()
+
+print 'DONE'

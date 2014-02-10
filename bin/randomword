@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+# randomword.pl is copyright (c) 2001 Ivan Kozik
+#
+# specialized version prints only words with char count > x
+#
+# rhcpd 2004
+
+
+$dictionary = "/Users/rhcpd/dict/words0";
+$wlen=6;
+
+open(FILE, $dictionary) or die "cannot open dictionary file: $!. try changing your preferences\n";
+@words = <FILE>;
+close(FILE);
+
+foreach (@words) { $upper++; }
+
+$lower=1;
+$random = rand( $upper ) + 1;
+
+$theword=$words[$random];
+    
+ # if we don't get a count of x, print something else ;-)
+
+    if ( length($theword) > $wlen) {
+print $theword;
+    }
+  else
+   {
+       print "quijibo \n";
+   }

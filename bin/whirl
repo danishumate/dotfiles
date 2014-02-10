@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+#
+#
+$|=1;$WHIRLEY_COUNT=-1;
+
+$whirley='-\|/' ;@whirley=split //,$whirley;
+
+sub whirley {
+  if ($WHIRLEY_COUNT+1==@whirley) {
+    $WHIRLEY_COUNT=0;
+  } else {
+    $WHIRLEY_COUNT++;
+  }
+  return "@whirley[$WHIRLEY_COUNT]";
+}
+  while (1) {
+    sleep 1;
+    print STDERR "Please Wait : ".&whirley."\r";
+}

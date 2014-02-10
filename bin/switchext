@@ -1,0 +1,7 @@
+#!/bin/csh
+set extold = $1
+set extnew = $2
+
+foreach item (`ls *.$extold`) 
+    mv $item $item:r.$extnew
+end

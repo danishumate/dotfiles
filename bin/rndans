@@ -1,0 +1,25 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+
+my ($szConumdrum, $szThisSolution, @solution, $URL, $iRandom);
+
+print 'Conundrum: ';
+chomp ($szConumdrum = <STDIN>);
+
+while () {
+    print 'Solution:  ';
+    chomp ($szThisSolution = <STDIN>);
+    last if $szThisSolution eq '';
+    push @solution, $szThisSolution;
+}
+
+$URL = "http://www.random.org/cgi-bin/randnum?num=1&min=0&max=$#solution&col=1";
+
+print "Deciding...\n";
+$iRandom = get($URL);
+die "Unable to decide!\n" if not defined $iRandom;
+
+print "The solution to '$szConumdrum' is '$solution[$iRandom]'\n";
+
+__END__

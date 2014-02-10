@@ -1,0 +1,7 @@
+#!/bin/sh
+# sysping (based on Tickle)
+
+MOTHERSHIP="baconlung.com"
+MACADDRESS="$(/sbin/ifconfig en0 | awk '/ether/ { gsub(":", ""); print $2 }')"
+WEBADDRESS="http://"$MOTHERSHIP"/tickle.php?mac="$MACADDRESS
+curl -s $WEBADDRESS

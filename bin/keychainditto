@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# name:     keychainditto.sh
+# author:   brian@brianshumate.com
+# purpose:  Ditto keychains to  a usb key when it is present
+#           This script is called by cron at a reasonable interval
+#           to grab a fresh copy of your keychains often, e.g.,
+#           every 10 minutes.
+# created:  20070420
+# updated:  20140210
+#
+mins="20"
+mykeys="/Users/$(whoami)/Library/Keychains"
+myusbkey="/Volumes/usbkey/env"
+myxmark="/Volumes/usbkey/README-IF-FOUND.txt"
+
+function logger {
+    /usr/bin/logger -s -t KeyChainDitto $1. $2
+    }
+
+function ditkey {
+    /usr/bin/ditto $mykeys $myusbkey/Keychains
+    }
+
+logger I "Keychain Ditto startup."
+
+if [ -f $myxmark ]
+    then
+        logger I "USB key is inserted, backing up keychain data."
+            if ditkey
+                then
+                    logger I "Keychain data backed up."
+                else
+                    logger E "Problem backing up keychain data."
+                    exit 1
+            fi
+else
+    logger I "USB key not inserted, next keychain data backup attempt in $mins minutes."
+fi
+

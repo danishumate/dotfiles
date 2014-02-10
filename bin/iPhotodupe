@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+use Digest::MD5;
+use Mac::Glue;
+  
+my $iphoto  = Mac::Glue->new( "iPhoto" );
+
+my $album   = "photo library album";
+my $library = $iphoto->prop( $album );
+
+my $count   = $library->prop( "photos" )->count;
+print "My count is $count\n";
+
+my $md5     = Digest::MD5->new();
+my %digests = ();
+
+PHOTO: for( my $index = $count; $index > 0; $index-- )
+  {
+  my $photo  = $library->obj( photo => $index );
+  my $path   = $photo->prop( "image_path" )->get;
+    
+  next unless defined $path;
+    
+  open my($fh), $path or do { warn "$path: $!\n"; next PHOTO };
+  $md5->addfile( $fh );
+    
+  my $digest = $md5->hexdigest;
+    
+  if( exists $digests{ $digest } )
+    {
+    print "$digests{ $digest }\n  -->$path\n";
+    $photo->remove;
+    }
+  else
+    {
+    print "$index->$path: $digest\n";
+    $digests{ $digest } = $path;
+    }
+    
+  $md5->reset;
+  }

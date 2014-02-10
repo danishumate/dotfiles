@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#
+# pgsql_bak: a PostgreSQL backup script
+
+cutbin = "/usr/bin/cut"
+datebin = "/bin/date"
+psqlbin = "/usr/local/bin/psql"
+backup_dir="/home/armstrong/.db_backups/"
+backup_date ="$($datebin +%d-%m-%Y)"
+keep_days = "42"
+databases = "$($psqlbin -l -t | $cutbin -d'|' -f1 | sed -e 's/ //g' -e '/^$/d')"
+
+for i in $databases; do
+  if [ "$i" != "template0" ] && [ "$i" != "template1" ]; then
+    echo Dumping $i to $backup_dir$i\_$backup_date
+    pg_dump -Fc $i > $backup_dir$i\_$backup_date
+  fi
+done
+find $backup_dir -type f -prune -mtime +$keep_days -exec rm -f {} \;

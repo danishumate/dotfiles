@@ -1,0 +1,198 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use Pod::Usage;
+
+=head1 NAME 
+
+haiku - send a system warning haiku over STDERR
+
+
+=head1 SYNOPSIS 
+
+haiku [--cache] [--help] [--verbose] [--version]
+
+=cut
+
+use vars qw/
+            %syllables
+            $threes $fours $fives $sevens
+            $seven_lines $haiku
+            $verbose $cache
+            $VERSION
+/;
+
+BEGIN{ $VERSION=0.9; }
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-c, --cache>  
+Cache the system message store to ~/.haikurc
+
+=item B<-h --help>    
+Print a usage message. 
+
+=item B<-verb, --verbose>  
+Be verbose,
+
+=item B<-V, --Version> 
+Print haiku information and exit.
+
+=item B<-vers --version>
+Print haiku version and exit.
+
+
+=back
+
+
+=cut
+
+use Getopt::Long;
+
+BEGIN {
+    GetOptions(
+        'verbose!' => \$verbose,
+        'cache!'   => \$cache,
+        'version'  => sub { print $VERSION, $/ and exit(0)},
+        'Version'  => sub { print "system error haiku, v$VERSION, by Zaxo of Perlmonks$/" and exit(0)}, 
+        'help'     => sub { pod2usage(1) },
+    ) or pod2usage(1);
+}
+
+use Lingua::EN::Syllable;
+
+sub syllables {
+    my $count = 0;
+    $count += syllable($_) for @_;
+    $count ? $count : ();
+}
+
+{
+    my @punc = (
+        ' - ',
+        (', ') x 3,
+        ': ',
+        '; ',
+        ('.  ') x 2,
+        (' ') x 3
+    );
+
+    sub punct {
+        $punc[rand @punc]
+    }
+}
+
+{
+    my @terminal = (
+        ('.') x 5,
+        '!',
+        '?',
+    );
+
+    sub terminal {
+        $terminal[rand @terminal]
+    }
+}
+
+if (-f "$ENV{HOME}/.haikurc" and !$cache) {
+    %syllables = %{ do "$ENV{HOME}/.haikurc" };
+}
+else {
+    my @messages = grep {
+        $_ and ($!=$_) !~ /\d/
+    } 0 .. 255;
+
+    for (@messages) {
+        push @{$syllables{syllables(split ' ', $!=$_)}}, $_;
+    }
+}
+
+if ($cache) {
+    use Data::Dumper;
+    open my $fh, '>', "$ENV{HOME}/.haikurc" or die $!;
+    print $fh Dumper(\%syllables);
+    close $fh or die $!;
+}
+
+$fives  = scalar @{$syllables{5}};
+$sevens = scalar @{$syllables{7}};
+$fours  = scalar @{$syllables{4}};
+$threes = scalar @{$syllables{3}};
+
+$seven_lines = $sevens + 2*$fours*$threes;
+$haiku       = $fives * $fives * $seven_lines;
+
+exit main();
+
+=head1 DESCRIPTION
+
+B<haiku> constructs a random 5-7-5 syllable message out of the system error messages. The message is printed over STDERR. B<Lingua::EN::Syllable> is required to count syllables. 
+
+=cut
+
+sub pick {
+   my $sybs = shift;
+   $! = $syllables{$sybs}[rand @{$syllables{$sybs}}];
+   "$!"
+}
+
+sub pick_first {
+    pick(5) . punct
+}
+
+
+sub pick_second {
+    my $selector = rand $seven_lines;
+    $selector < $sevens &&
+        return pick(7) . punct;
+    $selector < $sevens + $fours * $threes &&
+        return pick(4) . punct . pick(3) . punct;
+    pick(3) . punct . pick(4) . punct;
+}
+
+sub pick_third {
+    pick(5) . terminal
+}
+
+sub main {
+    return -1 unless $haiku;
+    print "One of $haiku haiku, brought to you by *STDERR\n" if $verbose;
+    warn pick_first, $/;
+    warn pick_second, $/;
+    warn pick_third, $/;
+    0;
+}
+
+__END__
+
+
+=head1 SEE ALSO
+
+L<Lingua::EN::Syllable>, L<Getopt::Long>, L<Pod::Usage>, L<Data::Dumper>
+
+
+=head1 FILES
+
+L<${HOME}/.haikurc>
+
+
+=head1 AUTHOR
+
+Zaxo of Perlmonks
+
+
+=head1 COPYRIGHT
+
+2004, by Zaxo
+
+
+=head1 LICENSE
+
+Same as Perl
+
+
+=cut
+

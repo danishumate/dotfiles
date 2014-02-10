@@ -1,0 +1,194 @@
+#!/usr/bin/perl
+
+###############################################################################
+# SourceWatchPilotFinder.pl
+#
+# Copyright (C) 2007, Neoconned, SourceWatch
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###############################################################################
+
+$TRUE  = (1 == 1);
+$FALSE = (0 == 1);
+$LINE_SEP = "***";
+
+$file = './RELDOM';
+open(INFO, $file);
+
+$pilotID = 'will not possibly match';
+$recordsChecked = 0;
+$matchingRecordCount = 0;
+
+while (!eof(INFO))
+{
+	$line = <INFO>;
+
+	#Every line in the FAA database begins with the pilot ID:
+	#an 'A' followed by exactly 7 digits.
+	#The two digits after that are the certificate number.
+	
+	$nextPilotID = substr($line,0,8);
+
+	if ($nextPilotID ne $pilotID)
+	{
+		#It's a new pilot record.
+
+		#Print a progress report every so often.
+		$recordsChecked = $recordsChecked + 1;
+		$remainder = $recordsChecked % 50000;
+		if ($remainder==0)
+		{
+			print("Checked " . $recordsChecked . " records \n");			
+			###print("Current pilot record = " . $pilotRecord . "\n");
+		}
+		
+		#Check the existing pilot record to see if it matches Captain Kirk.
+		doesItMatchCaptainKirk();
+		
+		#Then create a new record.
+		$pilotRecord = "";
+		@pilotLines = ();
+		$pilotID = $nextPilotID;
+	}
+
+	#Add line to the pilot record.
+	
+	$line =~ s/^\s+//;
+	$line =~ s/\s+$//;
+	$pilotRecord = $pilotRecord . $line . $LINE_SEP;
+	push(@pilotLines,$line);
+}
+
+close(INFO);
+print("Checked " . $recordsChecked . " records \n");
+print("Found " . $matchingRecordsCount . " matching records \n");
+print("Finished");
+
+sub doesItMatchCaptainKirk
+{
+	# Pick which set of tests you want to run, and comment out the other set(s).
+
+	####if (calledKirkAndLivesInNorthCarolina()==$FALSE)
+	###{
+	###	return($FALSE);
+	###}
+
+	if (calledKirkAndMatchesBirdsCerts()==$FALSE)
+	{
+		return($FALSE);
+	}
+
+	$matchingRecordsCount += 1;
+   
+	print "==============================================\n";
+	print $matchingRecordsCount . ") " . $pilotID . "\n";
+   
+	foreach $lineToPrint(@pilotLines)
+	{
+		print $lineToPrint . "\n";
+	}   
+   
+	print "Line count = " . scalar(@pilotLines) . "\n";
+	print "==============================================\n";
+
+	return($TRUE);
+}
+
+sub calledKirkAndMatchesBirdsCerts
+{
+	if (givenNamesIncludeKirk()==$FALSE) {return($FALSE);}
+	
+	#If this test is disabled, search results will include pilots whose
+	#certificates are a superset of Kirk's.
+	####if (hasExactlyThreeCertificates()==$FALSE) {return($FALSE);}
+
+	#Airline Transport Pilot certificate:
+	#	Airline Transport Pilot, Airplane Multi Engine Land
+	#	Commercial privileges, Airplane Single Engine Land
+	if (index($pilotRecord,"PA        A/AMEL   C/ASEL" . $LINE_SEP)==-1)
+	{
+		return($FALSE);
+	}
+   
+	#Ground Instructor certificate: Advanced, Instrument
+	if (index($pilotRecord,"G         G/ADV    G/INST" . $LINE_SEP)==-1)
+	{
+		return($FALSE);
+	}
+
+	#Flight Instructor certificate: Airplane Single Engine
+	if (index($pilotRecord,"F/ASE" . $LINE_SEP)==-1)
+	{
+		return($FALSE);
+	}
+	
+	return($TRUE);
+}
+
+sub calledKirkAndLivesInNorthCarolina
+{
+	if (livesInNorthCarolina()==$FALSE) {return($FALSE);}
+	if (givenNamesIncludeKirk()==$FALSE) {return($FALSE);}
+	
+	return($TRUE);
+}
+
+sub calledKirkLivesInNorthCarolinaAndNotStudentPilot
+{
+	if (livesInNorthCarolina()==$FALSE) {return($FALSE);}
+	if (givenNamesIncludeKirk()==$FALSE) {return($FALSE);}
+	if (isStudentPilotOnly()) {return($FALSE);}
+	
+	return($TRUE);
+}
+
+#Record includes ' NC' (North Carolina).
+sub livesInNorthCarolina
+{
+	return (index($pilotLines[0]," NC")!=-1);
+}
+
+#Given names include "KIRK".
+sub givenNamesIncludeKirk
+{
+	$givenNames =  substr($pilotLines[0],10,30);
+	return (index($givenNames,"KIRK ")!=-1);
+}
+
+sub isStudentPilotOnly
+{
+	if (scalar(@pilotLines) != 2) {return($FALSE);}
+
+	$studentPilotCert = $pilotID."01PS";
+	return (index($pilotLines[1],$studentPilotCert) != -1);
+}
+
+sub isMechanicOnly
+{
+	if (scalar(@pilotLines) != 2) {return($FALSE);}
+
+	$mechanicCert = $pilotID."01M";
+	return (index($pilotLines[1],$mechanicCert) != -1);
+}
+
+sub livesInClayton
+{
+	#Record includes 'CLAYTON'.
+	return (index($pilotLines[0],"CLAYTON")!=-1);
+}
+
+sub hasExactlyThreeCertificates
+{
+	return (scalar(@pilotLines) == 4);
+}

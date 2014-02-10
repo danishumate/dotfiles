@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# makethumb
+#
+# A bash script to generate square thumbnails using imagemagick.
+#
+# Feel free to use and abuse, its just a script. Requires imagemagick!
+# See www.websurfshack.net for more stuff like this
+#
+
+if [ "$1" = "" ]; then
+echo "Usage: makethumb source_file [size] [output file]"
+echo ""
+echo "e.g."
+echo " makethumb large.jpg"
+echo " makethumb large.jpg 65"
+echo " makethumb large.jpg 45 thumb.jpg"
+echo " makethumb large.jpg 25 thumb.gif"
+echo ""
+echo "Note: You may specify an output file of a different type to the source. The image will be converted automatically to that type."
+echo ""
+exit
+fi
+
+if [ ! -e "$1" ]; then
+echo "Input file "$1" not found. Please specify a valid input file!"
+exit
+fi
+
+ORIG_FILE="$1"
+
+if [ "$2" = "" ]; then
+SIZE="45"
+else
+SIZE="$2"
+fi
+
+if [ "$3" = "" ]; then
+THUMB_FILE="THUMB_${ORIG_FILE}"
+else
+THUMB_FILE="$3"
+fi
+
+echo "Creating ${SIZE}x${SIZE} thumbnail '${THUMB_FILE}' from source image '${ORIG_FILE}'"
+
+#Grab the image dimensions
+WIDTH=`identify -format '%w' ${ORIG_FILE}`
+HEIGHT=`identify -format '%h' ${ORIG_FILE}`
+echo "Source image is ${WIDTH}x${HEIGHT}"
+
+if [ $WIDTH = $HEIGHT ]; then
+echo "Image is already square so just resizing..."
+`convert ${ORIG_FILE} -thumbnail "${SIZE}x${SIZE}" -strip ${THUMB_FILE}`
+else
+if [ $WIDTH -gt $HEIGHT ]; then
+echo "Image is landscape"
+`convert ${ORIG_FILE} -resize "x${SIZE}" -gravity Center -crop 100x100+0+0 +repage -strip ${THUMB_FILE}`
+fi
+if [ $WIDTH -lt $HEIGHT ]; then
+echo "Image is portrait"
+`convert ${ORIG_FILE} -resize "${SIZE}" -gravity Center -crop 100x100+0+0 +repage -strip ${THUMB_FILE}`
+fi
+fi
+
+NEWFILEDATA=`identify ${THUMB_FILE}`
+echo "Output file: ${NEWFILEDATA}"
+echo "Done!"

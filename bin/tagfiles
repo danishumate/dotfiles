@@ -1,0 +1,20 @@
+#! /bin/sh
+
+mp3path=`pwd`
+band='Dave Matthews & Tim Reynolds'
+album='Live @ Virginia Commonwealth University'
+disks='1'
+year=2008
+month=10
+day=26
+tarname="dt-$year-$month-$day.tar.gz"
+
+cd $mp3path
+find . -name '*.flac' | while read f; do ~/bin/flac -c -d "$f" | ~/bin/lame -V 2 --vbr-new - "$f".mp3; done
+mid3v2 -y $year-$month-$day -a "$band" -A "$album" *.mp3
+tracks='24'
+disk='1'; track='01'; mid3v2 --TPOS="$disk/$disks" -T "$track/$tracks" -t "Intro" *t$track.flac.mp3
+
+tar -pcvf ~/www/grooved.us/live/$tarname *.mp3
+rm *.mp3
+

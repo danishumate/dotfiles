@@ -1,0 +1,21 @@
+#!/bin/sh
+# detect arp poisoning on LAN
+
+currentmonth=`date "+%Y-%m-%d %H:%M:%S"`
+logpath="$HOME/log"
+
+rm $logpath/arpwatch.log
+
+echo "ARP Poisoning Audit: " $currentmonth >> $logpath/arpwatch.log
+echo -e "-----------------------------------------" >> $logpath/arpwatch.log
+echo -e >> $logpath/arpwatch.log
+
+arp -an | awk '{print $4}' | sort | uniq -c | grep -v ' 1 '
+
+if [ "$?" -eq 0 ]
+then
+        arp -an | awk '{print $4}' | sort | uniq -c | grep -v ' 1 ' >> $logpath/arpwatch.log 2>&1
+        cat $logpath/arpwatch.log
+else
+echo -e "No potential ARP poisoning instances found..." >> $logpath/arpwatch.log
+fi

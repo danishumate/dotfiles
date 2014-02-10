@@ -1,0 +1,12 @@
+echo "Whacking Safari Shit..."
+echo "Cache"
+rm -rf ~/Library/Caches/Safari
+echo "Cookies"
+rm -rf ~/Library/Cookies/Cookies.plist 
+echo "Downloads"
+rm -rf ~/Library/Safari/Downloads.plist 
+echo "History"
+rm -rf ~/Library/Safari/History.plist 
+echo "Recent Searches"
+defaults delete com.apple.safari RecentSearchStrings
+echo "Done"

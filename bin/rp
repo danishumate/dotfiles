@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# robo_pirate invocation script
+loggerbin=/usr/bin/logger
+pirateship=/home/bshumate/robo_pirate
+pythonbin=/home/bshumate/robo_pirate/bin/python
+
+$loggerbin 'robo_pirate: YARRR!'
+
+cd $pirateship
+source bin/activate
+$pythonbin robo_pirate.py
+deactivate

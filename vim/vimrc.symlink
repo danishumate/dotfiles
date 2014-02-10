@@ -1,0 +1,103 @@
+"""
+""" Brian's .vimrc
+""" With additions from http://nvie.com/posts/how-i-boosted-my-vim/
+"""
+
+" Using Pathogen for plugins
+call pathogen#infect()
+
+" Helpful defaults
+set shell=/bin/bash
+set nocompatible                " Disable complete vi compatibility
+set backspace=indent,eol,start  " Smarter backspacing
+set history=50                  " Keep command line history
+set ignorecase                  " Case-insensitive searching
+set matchtime=2                 " Bracket jumping time for showmatch
+
+if has("mouse")
+    set mouse=a                 " Enable the mouse
+endif
+
+set noautoindent                " No default auto-indentation
+set nobackup                    " Don't make backup files
+set nohlsearch                  " No search highlighting
+set noincsearch                 " No incremental searching
+set noshowcmd                   " Don't show incomplete commands
+set showmatch                   " Show matching brackets
+set ruler                       " Show cursor information
+set smartcase                   " Case-sensitive searching for searches
+                                " with uppercase letters
+set textwidth=0                 " No hard line wrapping
+set viminfo=\"50,'20            " Store session info in ~/.viminfo
+set wildmode=list               " More useful command completion
+set nowrap
+fixdel                          " Try to fix backspace if it's broken
+set nospell                     " set foldmethod=marker
+
+" Syntax highlighting settings
+if has("syntax")
+    syntax enable               " Automatic syntax highlighting
+    syntax sync maxlines=100    " Sync highlighting w/ previous 100 lines
+endif
+
+" Auto-commands
+if has("autocmd")
+    autocmd FileType python let python_highlight_all=1
+    autocmd FileType c,changelog,cheetah,cpp,cs,csh,css,django,dosini,haskell,java,javascript,mysql,objc,objcpp,perl,po,pyrex,python,rst,ruby,sh,sql,tcsh,vim setlocal tabstop=4 shiftwidth=4 expandtab softtabstop=4
+    autocmd FileType dtml,genshi,html,htmlcheetah,htmldjango,kid,mako,php,sgml,smarty,xhtml,xml,xslt setlocal tabstop=2 shiftwidth=2 expandtab softtabstop=2
+endif
+
+" Python auto complete
+if has("autocmd")
+    autocmd FileType python set complete+=k/home/sze6120e/.vim/pydiction-0.5/pydiction isk+=.,(
+endif
+
+" Line Numbering
+set number
+highlight LineNr term=bold cterm=NONE ctermfg=Blue ctermbg=NONE gui=NONE guifg=Blue guibg=NONE
+
+" Make some suspicious patch lines show up ;)
+set list
+set listchars=tab:>.,trail:.,extends:#,nbsp:.
+
+" \o/ Finally!
+set pastetoggle=<F6>
+
+" Such a unique but possible situation
+cmap w!! w !sudo tee % >/dev/null
+
+" NERDTree
+" Store the bookmarks file
+let NERDTreeBookmarksFile=expand("$HOME/.vim/NERDTreeBookmarks")
+
+" Don't display these kinds of files
+let NERDTreeIgnore=[ '\.pyc$', '\.pyo$', '\.py\$class$', '\.obj$',
+            \ '\.o$', '\.so$', '\.egg$', '^\.git$' ]
+
+            let NERDTreeShowBookmarks=1       " Show the bookmarks table on startup
+            let NERDTreeShowFiles=1           " Show hidden files, too
+            let NERDTreeShowHidden=1
+            let NERDTreeQuitOnOpen=1          " Quit on opening files from the tree
+            let NERDTreeHighlightCursorline=1 " Highlight the selected entry in the tree
+            let NERDTreeMouseMode=2           " Use a single click to fold/unfold directories
+                                              " and a double click to open files
+" Solarize
+set t_Co=256
+colorscheme solarized
+set background=dark
+set encoding=utf-8
+set fillchars+=stl:\ ,stlnc:\
+let g:solarized_termcolors=256
+syntax enable
+
+" GUI Font
+" set guifont=Anonymous\ Pro\ for\ Powerline:h16
+
+" Powerline options
+set laststatus=2
+set nomodeline
+python from powerline.vim import setup as powerline_setup
+python powerline_setup()
+python del powerline_setup
+let g:Powerline_symbols = 'fancy'
+
