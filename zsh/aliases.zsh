@@ -15,5 +15,6 @@ alias tmux="TERM=screen-256color-bce tmux"
 alias topfsz="du -ah . | sort -n -r | head -n $1"
 alias vncssh="ssh -t -L 5900:localhost:5900 $1 'x11vnc -localhost -display :0 -shared -forever -ncache 10 -rfbauth $HOME/.vnc/passwd'"
 alias webshare='python -c "import SimpleHTTPServer;SimpleHTTPServer.test()"'
+alias mort='java -Xmx2g -jar /Applications/mortimer.jar'
 # alias grep='egrep --color=always --exclude=\*.svn\* -r -n'
 
