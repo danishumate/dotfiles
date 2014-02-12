@@ -101,3 +101,6 @@ python powerline_setup()
 python del powerline_setup
 let g:Powerline_symbols = 'fancy'
 
+" CoVim
+"python import sys; sys.path.append("/Users/brian/.virtualenvs/covim/lib/python2.7/site-packages/")
+

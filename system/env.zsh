@@ -58,7 +58,15 @@ export LESS_TERMCAP_so
 export LESS_TERMCAP_ue=$reset_color
 export LESS_TERMCAP_us=${fg_bold[green]}
 
-## rbenv
+# language stuff
+
+## Groovy
+export GROOVY_HOME="$HOME/sandbox/groovy-2.2.1"
+
+## Java
+export  JAVA_HOME=/Library/Java/Home
+
+## Ruby: rbenv
 eval "$(rbenv init -)"
 
 if [[ -e "$HOME/.rbenv/completions/rbenv.zsh" ]];
