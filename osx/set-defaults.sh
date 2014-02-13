@@ -24,8 +24,8 @@ sudo defaults write /Library/Preferences/com.apple.windowserver DisplayResolutio
 # Enable highlight hover effect for the grid view of a stack (Dock)
 defaults write com.apple.dock mouse-over-hilte-stack -bool true
 
-# Set the icon size of Dock items to 36 pixels
-defaults write com.apple.dock tilesize -int 36
+# Set the icon size of Dock items to 32 pixels
+defaults write com.apple.dock tilesize -int 32
 
 # Enable spring loading for all Dock items
 defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
@@ -33,17 +33,17 @@ defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
 # Show indicator lights for open applications in the Dock
 defaults write com.apple.dock show-process-indicators -bool true
 
-# Don’t animate opening applications from the Dock
+# Don't animate opening applications from the Dock
 defaults write com.apple.dock launchanim -bool false
 
 # Enable the 2D Dock
-#defaults write com.apple.dock no-glass -bool true
+defaults write com.apple.dock no-glass -bool true
 
-# Automatically hide and show the Dock
-defaults write com.apple.dock autohide -bool true
+# Do not automatically hide and show the Dock
+defaults write com.apple.dock autohide -bool false
 
-# Make Dock icons of hidden applications translucent
-defaults write com.apple.dock showhidden -bool true
+# Do not make Dock icons of hidden applications translucent
+defaults write com.apple.dock showhidden -bool false
 
 #############################################################################
 # Finder
@@ -242,23 +242,23 @@ defaults write com.apple.terminal StringEncodings -array 4
 # Twitter
 #############################################################################
 
-# Disable smart quotes as it’s annoying for code tweets
+# Disable smart quotes as it's annoying for code tweets
 defaults write com.twitter.twitter-mac AutomaticQuoteSubstitutionEnabled -bool false
 
 # Show the app window when clicking the menu icon
 defaults write com.twitter.twitter-mac MenuItemBehavior -int 1
 
-# Enable the hidden ‘Develop’ menu
+# Enable the hidden ‘Develop' menu
 defaults write com.twitter.twitter-mac ShowDevelopMenu -bool true
 
 # Open links in the background
 defaults write com.twitter.twitter-mac openLinksInBackground -bool true
 
-# Allow closing the ‘new tweet’ window by pressing `Esc`
+# Allow closing the ‘new tweet' window by pressing `Esc`
 defaults write com.twitter.twitter-mac ESCClosesComposeWindow -bool true
 
 # Show full names rather than Twitter handles
 defaults write com.twitter.twitter-mac ShowFullNames -bool true
 
-# Hide the app in the background if it’s not the front-most window
+# Hide the app in the background if it's not the front-most window
 defaults write com.twitter.twitter-mac HideInBackground -bool true
