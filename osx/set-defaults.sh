@@ -56,7 +56,7 @@ defaults write com.apple.Finder FXPreferredViewStyle Nlsv
 chflags nohidden ~/Library
 
 # Finder: show hidden files by default
-defaults write com.apple.Finder AppleShowAllFiles -bool true
+defaults write com.apple.Finder AppleShowAllFiles -bool false
 
 # Finder: show all filename extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
