@@ -47,20 +47,22 @@ need_push () {
   fi
 }
 
-node_prompt() {
-  if ! [[ -z "$(nvm version | grep v | tr -d ' ')" ]]
-  then
-    echo "%{$fg_bold[yellow]%}$(nvm version | grep v | tr -d ' ')%{$reset_color%} "
-  else
-    echo ""
-  fi
-}
+# node_prompt() {
+#   if ! [[ -z "$(nvm version | grep v | tr -d ' ')" ]]
+#   then
+#     echo "%{$fg_bold[yellow]%}$(nvm version | grep v | tr -d ' ')%{$reset_color%} "
+#   else
+#     echo ""
+#   fi
+# }
 
 directory_name() {
   echo "%{$fg_bold[cyan]%}%1/%\/%{$reset_color%}"
 }
 
-export PROMPT=$'\n$(node_prompt)in $(directory_name) $(git_dirty)$(need_push)\n› '
+#export PROMPT=$'\n$(node_prompt)in $(directory_name) $(git_dirty)$(need_push)\n› '
+
+export PROMPT=$'\n%{$fg_bold[yellow]%}%n%{$reset_color%} at %{$fg_bold[red]%}%m%{$reset_color%} in $(directory_name) $(git_dirty)$(need_push)\n› '
 
 set_prompt () {
   export RPROMPT="%{$fg_bold[cyan]%}%{$reset_color%}"
@@ -70,22 +72,4 @@ precmd() {
   title "zsh" "%m" "%55<...<%~"
   set_prompt
 }
-
-# old prompt
-#
-#_prompt_pwd()
-#{
-#    case $PWD in
-#        $HOME)
-#            echo -n '~'
-#            ;;
-#        *)
-#            local p=$(echo -n "${PWD/$HOME/~}" | sed -e \
-#                      's-/\([^/]\)\([^/]*\)-/\1-g')
-#            echo -n "$p${${PWD/#*\/}[2,-1]}"
-#            ;;
-#    esac
-#}
-#
-#export PROMPT="%n@%m %{${fg[green]}%}%B\$(_prompt_pwd)%b%{$reset_color%}: "
 
