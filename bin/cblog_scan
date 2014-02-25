@@ -1,0 +1,258 @@
+#!/usr/bin/env bash
+#
+# cblog_scan.sh - scan Couchbase Server cbcollect_info logs for bad stuff
+#
+
+awkbin="/usr/bin/awk"
+cbcollectdir="cbcollect_info*"
+couchbaselogs="*/couchbase.log"
+cutbin="/usr/bin/cut"
+findbin="/usr/bin/find"
+grepbin="/usr/bin/grep"
+headbin="/usr/bin/head"
+lsbin="/bin/ls"
+sortbin="/usr/bin/sort"
+trbin="/usr/bin/tr"
+uniqbin="/usr/bin/uniq"
+wcbin="/usr/bin/wc"
+
+# Log stuff
+function logmsg {
+  case "$1" in
+  alert)
+           printf "[!] $2\n"
+     ;;
+  notice)  printf "[+] $2\n"
+     ;;
+  info)    printf "[-] $2\n"
+     ;;
+  *)       printf "[!] It blowed up at me! (with $1)\n" >&2
+     ;;
+  esac 
+} 
+
+# Get the OS
+function getos {
+  for l in $couchbaselogs; do
+    if $($headbin $l | $grepbin Linux > /dev/null 2>&1);
+      then
+      clusteros="Linux"
+    else
+      if $($headbin $l | $grepbin Windows > /dev/null 2>&1);
+        then
+        clusteros="Windows"
+      fi
+    fi
+  done
+  if [ "$clusteros" = "Linux" ]; then
+    logmsg info "Logs are for Linux based nodes"
+    else
+    logmsg info "Logs are for Microsoft Windows based nodes"
+  fi
+}
+
+# Get VM environment
+
+function getvmenv {
+  for l in $couchbaselogs; do
+    if $($grepbin vmware_balloon $l > /dev/null 2>&1); then
+      vmenv="vmWare"
+    else
+      if $($grepbin xen-balloon $l > /dev/null 2>&1); then
+        vmenv="Xen"
+    else
+      vmenv="physical";
+    fi
+  fi
+  done
+  case "$vmenv" in
+  vmWare)
+           logmsg info "Nodes are virtualized under vmWare"
+     ;;
+  Xen)  
+           logmsg info "Nodes are virtualized under Xen"
+     ;;
+  physical)
+           logmsg info "Nodes are not virtualized"
+     ;;
+  *)       
+           logmsg alert "Unable to determine virtualization in use"
+     ;;
+  esac
+}
+
+# Verify the CWD contains Couchbase Server cbcollect_info log directories
+function cblogdir {
+  if $lsbin $couchbaselogs > /dev/null 2>&1; then
+    nodecount="$($lsbin $couchbaselogs | $wcbin -l | tr -d ' ')"
+    logmsg info "Couchbase Server logs found for $nodecount nodes"
+  else
+    logmsg alert "Run from a directory containing cbcollect_info directories"
+    exit 1
+  fi
+}
+
+# Errors: 'exited with'
+function cbexited {
+  currentcount=0
+  exitedcount=0
+
+  for l in */diag.log; do
+    currentcount=$($grepbin 'exited with' $l | $wcbin -l)
+    exitedcount=$(expr $currentcount + $exitedcount)
+  done
+
+  if [ $exitedcount -gt 0 ]; then
+    logmsg alert "There are $exitedcount instances of 'exited with' messages in the diag.log files"
+  fi
+}
+
+# Errors: Failover
+function cbfailover {
+  currentcount=0
+  failedovercount=0
+
+  for l in */diag.log; do
+    currentcount=$($grepbin 'was automatically failovered' $l | $wcbin -l)
+    failedovercount=$(expr $currentcount + $failedovercount)
+  done
+
+  if [ $failedovercount -gt 0 ]; then
+    logmsg alert "There are $failedovercount instances of failover messages in the diag.log files"
+  fi
+}
+
+# Errors: Rebalance
+function cbrebalance {
+  currentcount=0
+  rbfailedcount=0
+
+  for l in */ns_server.debug.log; do
+    currentcount=$($grepbin 'Rebalance failed' $l | $wcbin -l)
+    rbfailedcount=$(expr $currentcount + $rbfailedcount)
+  done
+
+  if [ $rbfailedcount -gt 0 ]; then
+    logmsg alert "There are $rbfailedcount instances of failed rebalance messages in the ns_server.debug.log files"
+  fi
+}
+
+# Errors: 'IP address seems to have changed'
+function cbipaddress {
+currentcount=0
+ipchangedcount=0
+
+for l in */ns_server.debug.log; do
+  currentcount=$($grepbin 'IP address seems to have changed' $l | $wcbin -l)
+  ipchangedcount=$(expr $currentcount + $ipchangedcount)
+done
+
+if [ $ipchangedcount -gt 0 ]; then
+  logmsg alert "There are $ipchangedcount instances of IP change messages"
+fi
+}
+
+# memcached connections in TIME_WAIT
+function mctimewait {
+  currentcount=0
+  timewaitcount=0
+
+  for l in */couchbase.log; do
+    currentcount=$($grepbin 'TIME_WAIT' $l | $grepbin 11211 | $wcbin -l)
+    timewaitcount=$(expr $currentcount + $timewaitcount)
+  done
+
+  if [ $timewaitcount -gt 0 ]; then
+    logmsg alert "There are $timewaitcount instances of memcached TIME_WAIT messages in the couchbase.log files"
+  fi
+}
+
+# Could not connect to memcached
+function mcconnect {
+  currentcount=0
+  noconnectcount=0
+
+  for l in */ns_server.error.log; do
+    currentcount=$($grepbin 'couldnt_connect_to_memcached' $l | $wcbin -l)
+    noconnectcount=$(expr $currentcount + $noconnectcount)
+  done
+
+  if [ $noconnectcount -gt 0 ]; then
+    logmsg alert "There are $noconnectcount instances of error connecting to memcached messages in the ns_server.error.log files"
+  fi
+}
+
+# Port server memcached exited with
+function mcexited {
+  currentcount=0
+  mcexitcount=0
+
+  for l in */ns_server.debug.log; do
+    currentcount=$($grepbin 'exited with status' $l | $grepbin 'Port server memcached on node' | $wcbin -l | $trbin -d ' ')
+    mcexitcount=$(expr $currentcount + $mcexitcount)
+  done
+
+  if [ $mcexitcount -gt 0 ]; then
+    logmsg alert "There are $mcexitcount instances of Port server memcached exited messages in the ns_server.debug.log files"
+  fi
+}
+
+# Net tick timeouts/Erlang schedule latency issues
+function cberlsched {
+  if $grepbin 'Detected time forward jump' */ns_server.error.log > /dev/null; then
+    logmsg alert "Found Erlang schedule latency issues in the ns_server.error.log files"
+  fi
+}
+
+# Linux OOM
+function linuxoom {
+  if [ $clusteros = "Linux" ]; then
+    if $grepbin 'invoked oom-killer' $couchbaselogs > /dev/null; then
+      printf "[!] Found Linux OOM killer references, listing count/nodes:"
+      $grepbin 'invoked oom-killer' $couchbaselogs | $awkbin -F '@' {'print $2'} | $awkbin -F '_' {'print $1'} | $sortbin | $uniqbin -c
+    fi
+  fi
+}
+
+# Linux VM Swappiness > 0
+function linuxswappiness {
+  if [ $clusteros = "Linux" ]; then
+    for l in */couchbase.log; do
+      currentswappiness="$($grepbin 'vm.swappiness' $l | $cutbin -d '=' -f 2 | tr -d ' ')"
+        if [ $currentswappiness -gt 0 ]; then
+          logmsg alert "Found vm.swappiness > 0 ($currentswappiness)";
+        fi;
+    done
+  fi
+}
+
+# Linux Transparent Huge Pages
+function linuxthp {
+  if [ $clusteros = "Linux" ]; then
+    for t in $($grepbin nr_anon_transparent_hugepages $couchbaselogs | $cutbin -d ' ' -f 2); do
+      if [ $t != 0 ]; then 
+        logmsg alert "Linux node using Transparent Huge Pages"
+      fi;
+    done
+  fi
+}
+
+
+logmsg info "Scanning Couchbase Server logs for obvious bad stuff"
+cblogdir
+cbversion="$($grepbin -w -m 1 version */stats.log | $cutbin -d ':' -f 2 | $trbin -d ' ')"
+logmsg info "This is Couchbase Server version $cbversion"
+getos
+getvmenv
+cbexited
+cbfailover
+cbipaddress
+cbrebalance
+mcconnect
+mcexited
+mctimewait
+linuxoom
+linuxswappiness
+linuxthp
+
+logmsg info "Scan complete"
