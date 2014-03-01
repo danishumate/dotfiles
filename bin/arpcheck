@@ -1,0 +1,30 @@
+#!/bin/sh
+# ARP shenanigans here?
+
+THISMONTH=`date "+%Y-%m-%d %H:%M:%S"`
+LOGPATH="$HOME/log"
+LOGFILE="$LOGPATH/arpcheck.log"
+PLATFORM="$(uname -s)"
+
+if [ $PLATFORM == "Linux" ]; then
+  TECHO="echo -e"
+else
+  TECHO="echo"
+fi
+
+rm $LOGFILE && touch $LOGFILE
+
+$TECHO "ARP Shenanigans: " $THISMONTH >> $LOGFILE
+$TECHO "-----------------------------------------" >> $LOGFILE
+$TECHO >> $LOGFILE
+
+arp -an | awk '{print $4}' | sort | uniq -c | grep -v ' 1 '
+
+if [ "$?" -eq 0 ]
+then
+        arp -an | awk '{print $4}' | sort | uniq -c | grep -v ' 1 ' >> $LOGPATH/arpwatch.log 2>&1
+        cat $LOGFILE
+else
+$TECHO "Maybe no ARP shenanigans found..." >> $LOGFILE
+fi
+
